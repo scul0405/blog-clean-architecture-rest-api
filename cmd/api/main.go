@@ -1,7 +1,8 @@
-package api
+package main
 
 import (
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
+	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/utils"
 	"log"
 	"os"
@@ -22,5 +23,7 @@ func main() {
 		log.Fatalf("ParseConfig: %v", err)
 	}
 
-	log.Printf("Successfully loaded config: %#v", cfg)
+	appLogger := logger.NewApiLogger(cfg)
+	appLogger.InitLogger()
+	appLogger.Infof("AppVersion: %s, LogLevel: %s, Mode: %s", cfg.Server.AppVersion, cfg.Logger.Level, cfg.Server.Mode)
 }

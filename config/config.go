@@ -7,6 +7,8 @@ import (
 )
 
 type Config struct {
+	Server ServerConfig
+	Logger LoggerConfig
 }
 
 type ServerConfig struct {
@@ -14,6 +16,14 @@ type ServerConfig struct {
 	Port       string
 	Mode       string
 	Debug      bool
+}
+
+type LoggerConfig struct {
+	Development       bool
+	DisableCaller     bool
+	DisableStacktrace bool
+	Encoding          string
+	Level             string
 }
 
 func LoadConfig(filename string) (*viper.Viper, error) {

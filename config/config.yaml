@@ -4,3 +4,9 @@ server:
   Mode: Development
   Debug: true
 
+logger:
+    Development: true
+    DisableCaller: false
+    DisableStacktrace: false
+    Encoding: json
+    Level: info
