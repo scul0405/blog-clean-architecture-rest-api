@@ -1,0 +1,5 @@
+server:
+  AppVersion: 1.0.0
+  Port: :5000
+  Mode: Development
+  Debug: true
