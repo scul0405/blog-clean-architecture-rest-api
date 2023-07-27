@@ -10,3 +10,12 @@ logger:
     DisableStacktrace: false
     Encoding: json
     Level: info
+
+postgres:
+    PostgresqlHost: localhost
+    PostgresqlPort: 5432
+    PostgresqlUser: admin
+    PostgresqlPassword: secret
+    PostgresqlDbname: blog_db
+    PostgresqlSslmode: false
+    PgDriver: pgx

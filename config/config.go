@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	Server ServerConfig
-	Logger LoggerConfig
+	Server   ServerConfig
+	Logger   LoggerConfig
+	Postgres PostgresConfig
 }
 
 type ServerConfig struct {
@@ -24,6 +25,16 @@ type LoggerConfig struct {
 	DisableStacktrace bool
 	Encoding          string
 	Level             string
+}
+
+type PostgresConfig struct {
+	PostgresqlHost     string
+	PostgresqlPort     string
+	PostgresqlUser     string
+	PostgresqlPassword string
+	PostgresqlDbname   string
+	PostgresqlSSLMode  bool
+	PgDriver           string
 }
 
 func LoadConfig(filename string) (*viper.Viper, error) {
