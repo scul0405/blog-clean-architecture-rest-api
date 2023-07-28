@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/opentracing/opentracing-go"
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/postgres"
+	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/jaeger"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/utils"
 	"log"
@@ -39,4 +41,14 @@ func main() {
 	}
 	defer psqlDB.Close()
 
+	// Jaeger
+	tracer, closer, err := jaeger.InitJaeger(cfg)
+	if err != nil {
+		appLogger.Fatal("cannot create tracer", err)
+	}
+	appLogger.Info("Jaeger connected")
+
+	opentracing.SetGlobalTracer(tracer)
+	defer closer.Close()
+	appLogger.Info("Opentracing connected")
 }

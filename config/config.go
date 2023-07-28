@@ -10,6 +10,7 @@ type Config struct {
 	Server   ServerConfig
 	Logger   LoggerConfig
 	Postgres PostgresConfig
+	Jaeger   Jaeger
 }
 
 type ServerConfig struct {
@@ -35,6 +36,12 @@ type PostgresConfig struct {
 	PostgresqlDbname   string
 	PostgresqlSSLMode  bool
 	PgDriver           string
+}
+
+type Jaeger struct {
+	Host        string
+	ServiceName string
+	LogSpans    bool
 }
 
 func LoadConfig(filename string) (*viper.Viper, error) {

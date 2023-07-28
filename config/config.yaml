@@ -19,3 +19,8 @@ postgres:
     PostgresqlDbname: blog_db
     PostgresqlSslmode: false
     PgDriver: pgx
+
+Jaeger:
+  Host: localhost:6831
+  ServiceName: blogs_service
+  LogSpans: false
