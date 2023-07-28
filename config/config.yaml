@@ -3,6 +3,8 @@ server:
   Port: :5000
   Mode: Development
   Debug: true
+  ReadTimeout: 5
+  WriteTimeout: 5
 
 logger:
     Development: true
@@ -20,7 +22,8 @@ postgres:
     PostgresqlSslmode: false
     PgDriver: pgx
 
-Jaeger:
+jaeger:
   Host: localhost:6831
   ServiceName: blogs_service
   LogSpans: false
+

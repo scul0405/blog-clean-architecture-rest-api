@@ -4,20 +4,23 @@ import (
 	"errors"
 	"github.com/spf13/viper"
 	"log"
+	"time"
 )
 
 type Config struct {
 	Server   ServerConfig
 	Logger   LoggerConfig
 	Postgres PostgresConfig
-	Jaeger   Jaeger
+	Jaeger   JaegerConfig
 }
 
 type ServerConfig struct {
-	AppVersion string
-	Port       string
-	Mode       string
-	Debug      bool
+	AppVersion   string
+	Port         string
+	Mode         string
+	Debug        bool
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
 }
 
 type LoggerConfig struct {
@@ -38,7 +41,7 @@ type PostgresConfig struct {
 	PgDriver           string
 }
 
-type Jaeger struct {
+type JaegerConfig struct {
 	Host        string
 	ServiceName string
 	LogSpans    bool

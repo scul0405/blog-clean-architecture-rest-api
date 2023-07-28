@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
+	"github.com/scul0405/blog-clean-architecture-rest-api/internal/server"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/postgres"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/jaeger"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
@@ -51,4 +52,9 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 	defer closer.Close()
 	appLogger.Info("Opentracing connected")
+
+	s := server.NewServer(cfg, psqlDB, appLogger)
+	if err = s.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
