@@ -1,6 +1,6 @@
 server:
   AppVersion: 1.0.0
-  Port: :5000
+  Port: :8080
   Mode: Development
   Debug: true
   ReadTimeout: 5
@@ -10,7 +10,7 @@ logger:
     Development: true
     DisableCaller: false
     DisableStacktrace: false
-    Encoding: json
+    Encoding: console
     Level: info
 
 postgres:
