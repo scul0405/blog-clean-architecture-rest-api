@@ -64,3 +64,24 @@ func (h *authHandlers) GetByID() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, user)
 	}
 }
+
+func (h *authHandlers) Login() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "auth.Login")
+		defer span.Finish()
+
+		user := &models.LoginUser{}
+		if err := utils.ReadRequest(c, user); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		userWithToken, err := h.authUC.Login(ctx, user)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusCreated, userWithToken)
+	}
+}

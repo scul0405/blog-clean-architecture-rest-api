@@ -58,3 +58,28 @@ func (u *authUseCase) GetByID(ctx context.Context, userID uuid.UUID) (*models.Us
 
 	return user, nil
 }
+
+func (u *authUseCase) Login(ctx context.Context, loginReq *models.LoginUser) (*models.UserWithToken, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.Login")
+	defer span.Finish()
+
+	user, err := u.authRepo.FindByEmail(ctx, loginReq.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = user.ComparePassword(loginReq.Password); err != nil {
+		return nil, httpErrors.NewUnauthorizedError(errors.Wrap(err, "authUC.Login.ComparePasswords"))
+	}
+
+	token, err := paseto.GeneratePASETOToken(user, u.cfg)
+	if err != nil {
+		return nil, httpErrors.NewInternalServerError(errors.Wrap(err, "authUC.Login.GeneratePASETOToken"))
+	}
+
+	user.SanitizePassword()
+	return &models.UserWithToken{
+		User:        user,
+		AccessToken: token,
+	}, nil
+}

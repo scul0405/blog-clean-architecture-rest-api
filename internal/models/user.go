@@ -50,6 +50,11 @@ func (u *User) ComparePassword(password string) error {
 	return nil
 }
 
+// SanitizePassword sanitize user password for response data
+func (u *User) SanitizePassword() {
+	u.Password = ""
+}
+
 // PrepareCreate prepare for register
 func (u *User) PrepareCreate() error {
 	u.Password = strings.TrimSpace(u.Password)
@@ -72,4 +77,9 @@ func (u *User) PrepareCreate() error {
 type UserWithToken struct {
 	User        *User  `json:"user"`
 	AccessToken string `json:"access_token"`
+}
+
+type LoginUser struct {
+	Email    string `json:"email" validate:"omitempty,lte=60,email"`
+	Password string `json:"password" validate:"omitempty,required,gte=6"`
 }

@@ -45,3 +45,16 @@ func (r *authRepo) GetByID(ctx context.Context, userID uuid.UUID) (*models.User,
 	}
 	return user, nil
 }
+
+// FindByEmail find user by email
+func (r *authRepo) FindByEmail(ctx context.Context, email string) (*models.User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "authRepo.FindByEmail")
+	defer span.Finish()
+
+	user := &models.User{}
+	if err := r.db.QueryRowxContext(ctx, getUserByEmailQuery, email).StructScan(user); err != nil {
+		return nil, errors.Wrap(err, "authRepo.FindByEmail.QueryRowxContext")
+	}
+
+	return user, nil
+}

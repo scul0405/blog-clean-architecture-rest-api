@@ -18,6 +18,7 @@ const (
 var (
 	BadRequest          = errors.New("Bad request")
 	NotFound            = errors.New("Not Found")
+	Unauthorized        = errors.New("Unauthorized")
 	InternalServerError = errors.New("Internal Server Error")
 	RequestTimeoutError = errors.New("Request Timeout")
 )
@@ -83,6 +84,15 @@ func NewNotFoundError(causes interface{}) RestErr {
 	return RestError{
 		ErrStatus: http.StatusNotFound,
 		ErrError:  NotFound.Error(),
+		ErrCauses: causes,
+	}
+}
+
+// New Unauthorized Error
+func NewUnauthorizedError(causes interface{}) RestErr {
+	return RestError{
+		ErrStatus: http.StatusUnauthorized,
+		ErrError:  Unauthorized.Error(),
 		ErrCauses: causes,
 	}
 }

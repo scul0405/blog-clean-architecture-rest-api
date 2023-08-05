@@ -10,4 +10,9 @@ const (
        				 address, city, gender, postcode, birthday, created_at, updated_at, login_date  
 					 FROM users 
 					 WHERE user_id = $1`
+
+	getUserByEmailQuery = `SELECT user_id, first_name, last_name, email, password, role, about, avatar, phone_number, 
+							address, city, gender, postcode, birthday, created_at, updated_at, login_date  
+							FROM users 
+							WHERE email = $1`
 )
