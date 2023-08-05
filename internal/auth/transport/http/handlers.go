@@ -34,13 +34,13 @@ func (h *authHandlers) Register() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		createdUser, err := h.authUC.Register(ctx, user)
+		userWithToken, err := h.authUC.Register(ctx, user)
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		return c.JSON(http.StatusCreated, createdUser)
+		return c.JSON(http.StatusCreated, userWithToken)
 	}
 }
 

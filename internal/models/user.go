@@ -68,3 +68,8 @@ func (u *User) PrepareCreate() error {
 	}
 	return nil
 }
+
+type UserWithToken struct {
+	User        *User  `json:"user"`
+	AccessToken string `json:"access_token"`
+}

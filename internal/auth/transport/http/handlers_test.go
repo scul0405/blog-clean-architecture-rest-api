@@ -58,7 +58,11 @@ func TestAuthHandlers_Register(t *testing.T) {
 	span, ctxWithTrace := opentracing.StartSpanFromContext(ctx, "auth.Register")
 	defer span.Finish()
 
-	mockAuthUC.EXPECT().Register(ctxWithTrace, gomock.Eq(user)).Return(user, nil)
+	userWithToken := &models.UserWithToken{
+		User: user,
+	}
+
+	mockAuthUC.EXPECT().Register(ctxWithTrace, gomock.Eq(user)).Return(userWithToken, nil)
 
 	handlerFunc := authHandlers.Register()
 	err = handlerFunc(c)

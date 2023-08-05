@@ -52,10 +52,10 @@ func (mr *MockUseCaseMockRecorder) GetByID(ctx, userID interface{}) *gomock.Call
 }
 
 // Register mocks base method.
-func (m *MockUseCase) Register(ctx context.Context, user *models.User) (*models.User, error) {
+func (m *MockUseCase) Register(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", ctx, user)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(*models.UserWithToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

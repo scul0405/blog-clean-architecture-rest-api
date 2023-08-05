@@ -10,6 +10,7 @@ import (
 	"github.com/scul0405/blog-clean-architecture-rest-api/internal/models"
 	httpErrors "github.com/scul0405/blog-clean-architecture-rest-api/pkg/http_errors"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
+	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/paseto"
 )
 
 type authUseCase struct {
@@ -22,7 +23,7 @@ func NewAuthUseCase(cfg *config.Config, authRepo auth.Repository, logger logger.
 	return &authUseCase{cfg: cfg, authRepo: authRepo, logger: logger}
 }
 
-func (u *authUseCase) Register(ctx context.Context, user *models.User) (*models.User, error) {
+func (u *authUseCase) Register(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.Register")
 	defer span.Finish()
 
@@ -35,7 +36,15 @@ func (u *authUseCase) Register(ctx context.Context, user *models.User) (*models.
 		return nil, err
 	}
 
-	return createdUser, nil
+	token, err := paseto.GeneratePASETOToken(createdUser, u.cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UserWithToken{
+		User:        createdUser,
+		AccessToken: token,
+	}, nil
 }
 
 func (u *authUseCase) GetByID(ctx context.Context, userID uuid.UUID) (*models.User, error) {
