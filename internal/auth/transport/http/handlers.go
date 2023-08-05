@@ -34,8 +34,6 @@ func (h *authHandlers) Register() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		h.logger.Infof("User info %v", user)
-
 		createdUser, err := h.authUC.Register(ctx, user)
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
