@@ -1,6 +1,7 @@
 package models
 
 import (
+	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
 
@@ -29,8 +30,33 @@ type User struct {
 	LoginDate   time.Time  `json:"login_date" db:"login_date"`
 }
 
+// HashPassword hash the password with bcrypt
+func (u *User) HashPassword() error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	u.Password = string(hashedPassword)
+	return nil
+}
+
+// ComparePassword compare user password and payload
+func (u *User) ComparePassword(password string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // PrepareCreate prepare for register
 func (u *User) PrepareCreate() error {
+	u.Password = strings.TrimSpace(u.Password)
+	if err := u.HashPassword(); err != nil {
+		return err
+	}
+
 	u.Email = strings.ToLower(strings.TrimSpace(u.Email))
 
 	if u.PhoneNumber != nil {
