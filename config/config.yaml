@@ -5,6 +5,7 @@ server:
   Debug: true
   ReadTimeout: 5
   WriteTimeout: 5
+  SymmetricKey: secret_token_symmetric_key_12345
 
 logger:
     Development: true
