@@ -116,3 +116,55 @@ func TestAuthHandlers_GetByID(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, err)
 }
+
+func TestAuthHandlers_Login(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockAuthUC := mock.NewMockUseCase(ctrl)
+
+	cfg := &config.Config{
+		Logger: config.LoggerConfig{
+			Development: true,
+		},
+	}
+
+	apiLogger := logger.NewApiLogger(cfg)
+	authHandlers := NewAuthHandlers(cfg, mockAuthUC, apiLogger)
+
+	user := &models.LoginUser{
+		Email:    "liemledeptrai@gmail.com",
+		Password: "123456",
+	}
+
+	buf, err := converter.ToBytesBuffer(user)
+	require.NoError(t, err)
+	require.Nil(t, err)
+	require.NotNil(t, buf)
+
+	e := echo.New()
+	req := httptest.NewRequest(echo.POST, "/api/v1/auth/login", strings.NewReader(buf.String()))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	c := e.NewContext(req, rec)
+	ctx := utils.GetRequestCtx(c)
+	span, ctxWithTrace := opentracing.StartSpanFromContext(ctx, "auth.Login")
+	defer span.Finish()
+
+	userWithToken := &models.UserWithToken{
+		User: &models.User{
+			Email:    user.Email,
+			Password: user.Password,
+		},
+	}
+
+	mockAuthUC.EXPECT().Login(ctxWithTrace, gomock.Eq(user)).Return(userWithToken, nil)
+
+	handlerFunc := authHandlers.Login()
+	err = handlerFunc(c)
+	require.NoError(t, err)
+	require.Nil(t, err)
+}

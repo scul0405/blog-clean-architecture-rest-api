@@ -83,3 +83,38 @@ func TestAuthRepo_GetByID(t *testing.T) {
 		require.Equal(t, testUser, user)
 	})
 }
+
+func TestAuthRepo_FindByEmail(t *testing.T) {
+	t.Parallel()
+
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	require.NoError(t, err)
+	defer db.Close()
+
+	sqlxDB := sqlx.NewDb(db, "sqlmock")
+	defer sqlxDB.Close()
+
+	authRepo := NewAuthRepository(sqlxDB)
+
+	t.Run("FindByEmail", func(t *testing.T) {
+		uID := uuid.New()
+
+		rows := sqlmock.NewRows([]string{"user_id", "first_name", "last_name", "email"}).AddRow(
+			uID, "Liem", "Le", "liemledeptrai@gmail.com")
+
+		testUser := &models.User{
+			UserID:    uID,
+			FirstName: "Liem",
+			LastName:  "Le",
+			Email:     "liemledeptrai@gmail.com",
+		}
+
+		mock.ExpectQuery(getUserByEmailQuery).WithArgs(testUser.Email).WillReturnRows(rows)
+
+		user, err := authRepo.FindByEmail(context.Background(), testUser.Email)
+
+		require.NoError(t, err)
+		require.NotNil(t, user)
+		require.Equal(t, user, testUser)
+	})
+}
