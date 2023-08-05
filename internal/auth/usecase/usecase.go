@@ -38,9 +38,10 @@ func (u *authUseCase) Register(ctx context.Context, user *models.User) (*models.
 
 	token, err := paseto.GeneratePASETOToken(createdUser, u.cfg)
 	if err != nil {
-		return nil, err
+		return nil, httpErrors.NewInternalServerError(errors.Wrap(err, "authUC.Register.GeneratePASETOToken"))
 	}
 
+	createdUser.SanitizePassword()
 	return &models.UserWithToken{
 		User:        createdUser,
 		AccessToken: token,

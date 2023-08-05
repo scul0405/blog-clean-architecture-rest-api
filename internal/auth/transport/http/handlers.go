@@ -82,6 +82,6 @@ func (h *authHandlers) Login() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		return c.JSON(http.StatusCreated, userWithToken)
+		return c.JSON(http.StatusOK, userWithToken)
 	}
 }
