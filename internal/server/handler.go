@@ -1,10 +1,13 @@
 package server
 
 import (
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	authRepo "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/repository"
 	authHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/transport/http"
 	authUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/usecase"
+	apiMiddleware "github.com/scul0405/blog-clean-architecture-rest-api/internal/middleware"
+	"strings"
 
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/utils"
 	"net/http"
@@ -26,8 +29,36 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	health := v1.Group("/health")
 	authGroup := v1.Group("/auth")
 
+	// API middleware
+	mw := apiMiddleware.NewMiddlewareManager(authUC, s.cfg, s.logger)
+	e.Use(mw.RequestLoggerMiddleware)
+
+	// echo middleware
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPatch, http.MethodPost, http.MethodDelete},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderXRequestID},
+	}))
+
+	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
+		StackSize:         1 << 10, // 1KB
+		DisablePrintStack: true,
+		DisableStackAll:   true,
+	}))
+
+	e.Use(middleware.RequestID())
+
+	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+		Level: 5,
+		Skipper: func(c echo.Context) bool {
+			return strings.Contains(c.Request().URL.Path, "swagger") // TODO: Add swagger
+		},
+	}))
+	e.Use(middleware.Secure())
+	e.Use(middleware.BodyLimit("2M"))
+
 	// Map routes
-	authHttp.MapAuthRoutes(authGroup, authHandler)
+	authHttp.MapAuthRoutes(authGroup, authHandler, mw)
 
 	health.GET("", func(c echo.Context) error {
 		s.logger.Infof("Health check RequestID: %s", utils.GetRequestID(c))

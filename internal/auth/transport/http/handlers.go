@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/google/uuid"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
 	"github.com/scul0405/blog-clean-architecture-rest-api/internal/auth"
