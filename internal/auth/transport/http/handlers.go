@@ -25,7 +25,7 @@ func NewAuthHandlers(cfg *config.Config, authUC auth.UseCase, logger logger.Logg
 
 func (h *authHandlers) Register() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "auth.Register")
+		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.Register")
 		defer span.Finish()
 
 		user := &models.User{}
@@ -46,7 +46,7 @@ func (h *authHandlers) Register() echo.HandlerFunc {
 
 func (h *authHandlers) GetByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "auth.GetByID")
+		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.GetByID")
 		defer span.Finish()
 
 		userID, err := uuid.Parse(c.Param("id"))
@@ -67,7 +67,7 @@ func (h *authHandlers) GetByID() echo.HandlerFunc {
 
 func (h *authHandlers) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "auth.Login")
+		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.Login")
 		defer span.Finish()
 
 		user := &models.LoginUser{}

@@ -6,6 +6,9 @@ import (
 	authRepo "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/repository"
 	authHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/transport/http"
 	authUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/usecase"
+	blogRepo "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/repository"
+	blogHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/transport/http"
+	blogUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/usecase"
 	apiMiddleware "github.com/scul0405/blog-clean-architecture-rest-api/internal/middleware"
 	"strings"
 
@@ -16,18 +19,22 @@ import (
 func (s *Server) MapHandlers(e *echo.Echo) error {
 	// Init	repositories
 	authRepo := authRepo.NewAuthRepository(s.db)
+	blogRepo := blogRepo.NewBlogRepository(s.db)
 
 	// Init use cases
 	authUC := authUC.NewAuthUseCase(s.cfg, authRepo, s.logger)
+	blogUC := blogUC.NewBlogUseCase(s.cfg, blogRepo, s.logger)
 
 	// Init handlers
 	authHandler := authHttp.NewAuthHandlers(s.cfg, authUC, s.logger)
+	blogHander := blogHttp.NewBlogHandlers(s.cfg, blogUC, s.logger)
 
 	// Group routes
 	v1 := e.Group("/api/v1")
 
 	health := v1.Group("/health")
 	authGroup := v1.Group("/auth")
+	blogGroup := v1.Group("/blogs")
 
 	// API middleware
 	mw := apiMiddleware.NewMiddlewareManager(authUC, s.cfg, s.logger)
@@ -59,6 +66,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 
 	// Map routes
 	authHttp.MapAuthRoutes(authGroup, authHandler, mw)
+	blogHttp.MapBlogRoutes(blogGroup, blogHander, mw)
 
 	health.GET("", func(c echo.Context) error {
 		s.logger.Infof("Health check RequestID: %s", utils.GetRequestID(c))

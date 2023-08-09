@@ -2,7 +2,9 @@ package utils
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	httpErrors "github.com/scul0405/blog-clean-architecture-rest-api/pkg/http_errors"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
 )
 
@@ -39,4 +41,19 @@ func LogResponseError(ctx echo.Context, logger logger.Logger, err error) {
 		GetIPAddress(ctx),
 		err,
 	)
+}
+
+// GetUserUIDFromCtx get user id and convert to uuid from context
+func GetUserUIDFromCtx(ctx context.Context) (uuid.UUID, error) {
+	userID, ok := ctx.Value("user_id").(string)
+	if !ok {
+		return uuid.Nil, httpErrors.Unauthorized
+	}
+
+	userUID, err := uuid.Parse(userID)
+	if err != nil {
+		return uuid.Nil, httpErrors.Unauthorized
+	}
+
+	return userUID, err
 }

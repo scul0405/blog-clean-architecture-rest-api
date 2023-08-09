@@ -19,6 +19,7 @@ var (
 	BadRequest          = errors.New("Bad request")
 	NotFound            = errors.New("Not Found")
 	Unauthorized        = errors.New("Unauthorized")
+	Forbidden           = errors.New("Forbidden")
 	InternalServerError = errors.New("Internal Server Error")
 	RequestTimeoutError = errors.New("Request Timeout")
 )
@@ -93,6 +94,15 @@ func NewUnauthorizedError(causes interface{}) RestErr {
 	return RestError{
 		ErrStatus: http.StatusUnauthorized,
 		ErrError:  Unauthorized.Error(),
+		ErrCauses: causes,
+	}
+}
+
+// New Forbidden Error
+func NewForbiddenError(causes interface{}) RestErr {
+	return RestError{
+		ErrStatus: http.StatusForbidden,
+		ErrError:  Forbidden.Error(),
 		ErrCauses: causes,
 	}
 }
