@@ -1,3 +1,4 @@
+//go:generate mockgen -source pg_repo.go -destination mock/pg_repo_mock.go -package mock
 package blog
 
 import (
