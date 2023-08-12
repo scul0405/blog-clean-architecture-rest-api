@@ -9,6 +9,9 @@ import (
 	blogRepo "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/repository"
 	blogHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/transport/http"
 	blogUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/usecase"
+	commentRepo "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/repository"
+	commentHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/transport/http"
+	commentUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/usecase"
 	apiMiddleware "github.com/scul0405/blog-clean-architecture-rest-api/internal/middleware"
 	"strings"
 
@@ -20,14 +23,17 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	// Init	repositories
 	authRepo := authRepo.NewAuthRepository(s.db)
 	blogRepo := blogRepo.NewBlogRepository(s.db)
+	commentRepo := commentRepo.NewCommentRepository(s.db)
 
 	// Init use cases
 	authUC := authUC.NewAuthUseCase(s.cfg, authRepo, s.logger)
 	blogUC := blogUC.NewBlogUseCase(s.cfg, blogRepo, s.logger)
+	commentUC := commentUC.NewCommentUseCase(s.cfg, commentRepo, s.logger)
 
 	// Init handlers
 	authHandler := authHttp.NewAuthHandlers(s.cfg, authUC, s.logger)
-	blogHander := blogHttp.NewBlogHandlers(s.cfg, blogUC, s.logger)
+	blogHandler := blogHttp.NewBlogHandlers(s.cfg, blogUC, s.logger)
+	commentHandler := commentHttp.NewCommentHandlers(s.cfg, commentUC, s.logger)
 
 	// Group routes
 	v1 := e.Group("/api/v1")
@@ -35,6 +41,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	health := v1.Group("/health")
 	authGroup := v1.Group("/auth")
 	blogGroup := v1.Group("/blogs")
+	commentGroup := v1.Group("/comments")
 
 	// API middleware
 	mw := apiMiddleware.NewMiddlewareManager(authUC, s.cfg, s.logger)
@@ -66,7 +73,8 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 
 	// Map routes
 	authHttp.MapAuthRoutes(authGroup, authHandler, mw)
-	blogHttp.MapBlogRoutes(blogGroup, blogHander, mw)
+	blogHttp.MapBlogRoutes(blogGroup, blogHandler, mw)
+	commentHttp.MapCommentRoutes(commentGroup, commentHandler, mw)
 
 	health.GET("", func(c echo.Context) error {
 		s.logger.Infof("Health check RequestID: %s", utils.GetRequestID(c))
