@@ -20,3 +20,4 @@ envs/
 main
 .idea
 vendor
+pgdata
