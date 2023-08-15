@@ -7,18 +7,13 @@ import (
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/postgres"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/jaeger"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
-	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/utils"
 	"log"
-	"os"
 )
 
 func main() {
 	log.Println("Starting api server")
 
-	// Config
-	configPath := utils.GetConfigPath(os.Getenv("config"))
-
-	cfgFile, err := config.LoadConfig(configPath)
+	cfgFile, err := config.LoadConfig("./config/config")
 	if err != nil {
 		log.Fatalf("LoadConfig: %v", err)
 	}
