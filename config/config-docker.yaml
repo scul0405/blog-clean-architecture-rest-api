@@ -1,0 +1,30 @@
+server:
+  AppVersion: 1.0.0
+  Port: :8080
+  Mode: Development
+  Debug: true
+  ReadTimeout: 5
+  WriteTimeout: 5
+  SymmetricKey: secret_token_symmetric_key_12345
+
+logger:
+  Development: true
+  DisableCaller: false
+  DisableStacktrace: false
+  Encoding: console
+  Level: info
+
+postgres:
+  PostgresqlHost: postgres
+  PostgresqlPort: 5432
+  PostgresqlUser: admin
+  PostgresqlPassword: secret
+  PostgresqlDbname: blog_db
+  PostgresqlSslmode: false
+  PgDriver: pgx
+
+jaeger:
+  Host: localhost:6831
+  ServiceName: blogs_service
+  LogSpans: false
+
