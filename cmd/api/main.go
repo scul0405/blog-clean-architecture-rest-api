@@ -5,6 +5,7 @@ import (
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
 	"github.com/scul0405/blog-clean-architecture-rest-api/internal/server"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/postgres"
+	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/redis"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/jaeger"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
 	"log"
@@ -36,6 +37,10 @@ func main() {
 		appLogger.Infof("Postgres connected, Status: %#v", psqlDB.Stats())
 	}
 	defer psqlDB.Close()
+
+	redisClient := redis.NewRedisClient(cfg)
+	defer redisClient.Close()
+	appLogger.Info("Redis connected")
 
 	// Jaeger
 	tracer, closer, err := jaeger.InitJaeger(cfg)
