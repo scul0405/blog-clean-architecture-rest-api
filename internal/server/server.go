@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
+	"github.com/redis/go-redis/v9"
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
 	"net/http"
@@ -22,11 +23,12 @@ type Server struct {
 	echo   *echo.Echo
 	cfg    *config.Config
 	db     *sqlx.DB
+	rdb    *redis.Client
 	logger logger.Logger
 }
 
-func NewServer(cfg *config.Config, db *sqlx.DB, logger logger.Logger) *Server {
-	return &Server{echo: echo.New(), cfg: cfg, db: db, logger: logger}
+func NewServer(cfg *config.Config, db *sqlx.DB, rdb *redis.Client, logger logger.Logger) *Server {
+	return &Server{echo: echo.New(), cfg: cfg, db: db, rdb: rdb, logger: logger}
 }
 
 func (s *Server) Run() error {

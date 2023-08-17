@@ -12,6 +12,7 @@ type Config struct {
 	Logger   LoggerConfig
 	Postgres PostgresConfig
 	Jaeger   JaegerConfig
+	Redis    RedisConfig
 }
 
 type ServerConfig struct {
@@ -46,6 +47,15 @@ type JaegerConfig struct {
 	Host        string
 	ServiceName string
 	LogSpans    bool
+}
+
+type RedisConfig struct {
+	RedisHost     string
+	RedisPassword string
+	RedisDb       int
+	MinIdleConns  int
+	PoolSize      int
+	PoolTimeout   int
 }
 
 func LoadConfig(filename string) (*viper.Viper, error) {

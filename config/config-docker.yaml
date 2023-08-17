@@ -28,3 +28,10 @@ jaeger:
   ServiceName: blogs_service
   LogSpans: false
 
+redis:
+  RedisHost: redis:6379
+  RedisPassword: ""
+  RedisDb: 0
+  MinIdleConns: 200
+  PoolSize: 12000
+  PoolTimeout: 240

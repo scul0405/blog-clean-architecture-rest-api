@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -14,14 +15,20 @@ import (
 	"net/http"
 )
 
+const (
+	basePrefix    = "blog-api"
+	cacheDuration = 3600
+)
+
 type blogUseCase struct {
-	cfg      *config.Config
-	blogRepo blog.Repository
-	logger   logger.Logger
+	cfg       *config.Config
+	blogRepo  blog.Repository
+	redisRepo blog.RedisRepository
+	logger    logger.Logger
 }
 
-func NewBlogUseCase(cfg *config.Config, blogRepo blog.Repository, logger logger.Logger) blog.UseCase {
-	return &blogUseCase{cfg: cfg, blogRepo: blogRepo, logger: logger}
+func NewBlogUseCase(cfg *config.Config, blogRepo blog.Repository, redisRepo blog.RedisRepository, logger logger.Logger) blog.UseCase {
+	return &blogUseCase{cfg: cfg, blogRepo: blogRepo, redisRepo: redisRepo, logger: logger}
 }
 
 func (u *blogUseCase) Create(ctx context.Context, blog *models.Blog) (*models.BlogBase, error) {
@@ -46,9 +53,22 @@ func (u *blogUseCase) GetByID(ctx context.Context, id uuid.UUID) (*models.BlogBa
 	span, ctx := opentracing.StartSpanFromContext(ctx, "blogUC.GetByID")
 	defer span.Finish()
 
+	blogCached, err := u.redisRepo.GetBlogByIDCtx(ctx, u.generateBlogKey(id.String()))
+	if err != nil {
+		u.logger.Errorf("blogUC.GetByID: GetBlogByIDCtx: %v", err)
+	}
+
+	if blogCached != nil {
+		return blogCached, nil
+	}
+
 	blog, err := u.blogRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	if err = u.redisRepo.SetBlogCtx(ctx, u.generateBlogKey(blog.BlogID.String()), cacheDuration, blog); err != nil {
+		u.logger.Errorf("blogUC.GetByID: SetBlogCtx: %v", err)
 	}
 
 	return blog, nil
@@ -63,13 +83,17 @@ func (u *blogUseCase) Update(ctx context.Context, blog *models.BlogBase) (*model
 		return nil, err
 	}
 
-	if err := utils.ValidateIsOwner(ctx, blogByID.AuthorID.String(), u.logger); err != nil {
+	if err = utils.ValidateIsOwner(ctx, blogByID.AuthorID.String(), u.logger); err != nil {
 		return nil, httpErrors.NewRestError(http.StatusForbidden, "Forbidden", errors.Wrap(err, "blogUC.Update.ValidateIsOwner"))
 	}
 
 	updatedBlog, err := u.blogRepo.Update(ctx, blog)
 	if err != nil {
 		return nil, err
+	}
+
+	if err = u.redisRepo.DeleteBlogCtx(ctx, u.generateBlogKey(blog.BlogID.String())); err != nil {
+		u.logger.Errorf("blogUC.Update.DeleteBlogCtx: %v", err)
 	}
 
 	return updatedBlog, nil
@@ -84,11 +108,19 @@ func (u *blogUseCase) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	if err := utils.ValidateIsOwner(ctx, blogByID.AuthorID.String(), u.logger); err != nil {
+	if err = utils.ValidateIsOwner(ctx, blogByID.AuthorID.String(), u.logger); err != nil {
 		return httpErrors.NewRestError(http.StatusForbidden, "Forbidden", errors.Wrap(err, "blogUC.Delete.ValidateIsOwner"))
 	}
 
-	return u.blogRepo.Delete(ctx, id)
+	if err = u.blogRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	if err = u.redisRepo.DeleteBlogCtx(ctx, u.generateBlogKey(id.String())); err != nil {
+		u.logger.Errorf("blogUC.Delete.DeleteBlogCtx: %v", err)
+	}
+
+	return nil
 }
 
 func (u *blogUseCase) List(ctx context.Context, pq *utils.PaginationQuery) (*models.BlogsList, error) {
@@ -96,4 +128,8 @@ func (u *blogUseCase) List(ctx context.Context, pq *utils.PaginationQuery) (*mod
 	defer span.Finish()
 
 	return u.blogRepo.List(ctx, pq)
+}
+
+func (u *blogUseCase) generateBlogKey(blogID string) string {
+	return fmt.Sprintf("%s: %s", basePrefix, blogID)
 }
