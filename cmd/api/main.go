@@ -53,7 +53,7 @@ func main() {
 	defer closer.Close()
 	appLogger.Info("Opentracing connected")
 
-	s := server.NewServer(cfg, psqlDB, appLogger)
+	s := server.NewServer(cfg, psqlDB, redisClient, appLogger)
 	if err = s.Run(); err != nil {
 		log.Fatal(err)
 	}

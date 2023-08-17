@@ -3,13 +3,13 @@ package server
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	authRepo "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/repository"
+	authRepository "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/repository"
 	authHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/transport/http"
 	authUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/auth/usecase"
-	blogRepo "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/repository"
+	blogRepository "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/repository"
 	blogHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/transport/http"
 	blogUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/usecase"
-	commentRepo "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/repository"
+	commentRepository "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/repository"
 	commentHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/transport/http"
 	commentUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/usecase"
 	apiMiddleware "github.com/scul0405/blog-clean-architecture-rest-api/internal/middleware"
@@ -21,12 +21,14 @@ import (
 
 func (s *Server) MapHandlers(e *echo.Echo) error {
 	// Init	repositories
-	authRepo := authRepo.NewAuthRepository(s.db)
-	blogRepo := blogRepo.NewBlogRepository(s.db)
-	commentRepo := commentRepo.NewCommentRepository(s.db)
+	authRepo := authRepository.NewAuthRepository(s.db)
+	blogRepo := blogRepository.NewBlogRepository(s.db)
+	commentRepo := commentRepository.NewCommentRepository(s.db)
+
+	authRedisRepo := authRepository.NewAuthRedisRepository(s.rdb)
 
 	// Init use cases
-	authUC := authUC.NewAuthUseCase(s.cfg, authRepo, s.logger)
+	authUC := authUC.NewAuthUseCase(s.cfg, authRepo, authRedisRepo, s.logger)
 	blogUC := blogUC.NewBlogUseCase(s.cfg, blogRepo, s.logger)
 	commentUC := commentUC.NewCommentUseCase(s.cfg, commentRepo, s.logger)
 

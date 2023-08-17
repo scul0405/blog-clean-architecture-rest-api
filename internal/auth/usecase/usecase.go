@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -13,14 +14,20 @@ import (
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/paseto"
 )
 
+const (
+	basePrefix    = "api-auth"
+	cacheDuration = 3600
+)
+
 type authUseCase struct {
-	cfg      *config.Config
-	authRepo auth.Repository
-	logger   logger.Logger
+	cfg       *config.Config
+	authRepo  auth.Repository
+	redisRepo auth.RedisRepository
+	logger    logger.Logger
 }
 
-func NewAuthUseCase(cfg *config.Config, authRepo auth.Repository, logger logger.Logger) auth.UseCase {
-	return &authUseCase{cfg: cfg, authRepo: authRepo, logger: logger}
+func NewAuthUseCase(cfg *config.Config, authRepo auth.Repository, redisRepo auth.RedisRepository, logger logger.Logger) auth.UseCase {
+	return &authUseCase{cfg: cfg, authRepo: authRepo, redisRepo: redisRepo, logger: logger}
 }
 
 func (u *authUseCase) Register(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
@@ -52,9 +59,22 @@ func (u *authUseCase) GetByID(ctx context.Context, userID uuid.UUID) (*models.Us
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.GetByID")
 	defer span.Finish()
 
+	cachedUser, err := u.redisRepo.GetByIDCtx(ctx, u.generateUserKey(userID.String()))
+	if err != nil {
+		u.logger.Errorf("authUC.GetByID: GetByIDCtx: %v", err)
+	}
+
+	if cachedUser != nil {
+		return cachedUser, nil
+	}
+
 	user, err := u.authRepo.GetByID(ctx, userID)
 	if err != nil {
 		return nil, err
+	}
+
+	if err = u.redisRepo.SetUserCtx(ctx, u.generateUserKey(userID.String()), cacheDuration, user); err != nil {
+		u.logger.Errorf("authUC.GetByID.SetUserCtx: %v", err)
 	}
 
 	return user, nil
@@ -83,4 +103,8 @@ func (u *authUseCase) Login(ctx context.Context, loginReq *models.LoginUser) (*m
 		User:        user,
 		AccessToken: token,
 	}, nil
+}
+
+func (u *authUseCase) generateUserKey(userID string) string {
+	return fmt.Sprintf("%s: %s", basePrefix, userID)
 }
