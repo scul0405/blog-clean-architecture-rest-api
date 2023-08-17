@@ -26,10 +26,11 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	commentRepo := commentRepository.NewCommentRepository(s.db)
 
 	authRedisRepo := authRepository.NewAuthRedisRepository(s.rdb)
+	blogRedisRepo := blogRepository.NewBlogRedisRepository(s.rdb)
 
 	// Init use cases
 	authUC := authUC.NewAuthUseCase(s.cfg, authRepo, authRedisRepo, s.logger)
-	blogUC := blogUC.NewBlogUseCase(s.cfg, blogRepo, s.logger)
+	blogUC := blogUC.NewBlogUseCase(s.cfg, blogRepo, blogRedisRepo, s.logger)
 	commentUC := commentUC.NewCommentUseCase(s.cfg, commentRepo, s.logger)
 
 	// Init handlers

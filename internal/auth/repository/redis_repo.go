@@ -34,7 +34,7 @@ func (r *authRedisRepo) GetByIDCtx(ctx context.Context, key string) (*models.Use
 	return user, nil
 }
 
-func (a *authRedisRepo) SetUserCtx(ctx context.Context, key string, seconds int, user *models.User) error {
+func (r *authRedisRepo) SetUserCtx(ctx context.Context, key string, seconds int, user *models.User) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authRedisRepo.SetUserCtx")
 	defer span.Finish()
 
@@ -42,17 +42,17 @@ func (a *authRedisRepo) SetUserCtx(ctx context.Context, key string, seconds int,
 	if err != nil {
 		return errors.Wrap(err, "authRedisRepo.SetUserCtx.json.Unmarshal")
 	}
-	if err = a.rdb.Set(ctx, key, userBytes, time.Second*time.Duration(seconds)).Err(); err != nil {
+	if err = r.rdb.Set(ctx, key, userBytes, time.Second*time.Duration(seconds)).Err(); err != nil {
 		return errors.Wrap(err, "authRedisRepo.SetUserCtx.redisClient.Set")
 	}
 	return nil
 }
 
-func (a *authRedisRepo) DeleteUserCtx(ctx context.Context, key string) error {
+func (r *authRedisRepo) DeleteUserCtx(ctx context.Context, key string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authRedisRepo.DeleteUserCtx")
 	defer span.Finish()
 
-	if err := a.rdb.Del(ctx, key).Err(); err != nil {
+	if err := r.rdb.Del(ctx, key).Err(); err != nil {
 		return errors.Wrap(err, "authRedisRepo.DeleteUserCtx.redisClient.Del")
 	}
 	return nil
