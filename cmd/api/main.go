@@ -4,6 +4,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
 	"github.com/scul0405/blog-clean-architecture-rest-api/internal/server"
+	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/minio"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/postgres"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/redis"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/jaeger"
@@ -42,6 +43,11 @@ func main() {
 	defer redisClient.Close()
 	appLogger.Info("Redis connected")
 
+	minioClient, err := minio.NewMinioClient(cfg)
+	if err != nil {
+		appLogger.Infof("Minio client init: %v", err)
+	}
+
 	// Jaeger
 	tracer, closer, err := jaeger.InitJaeger(cfg)
 	if err != nil {
@@ -53,7 +59,7 @@ func main() {
 	defer closer.Close()
 	appLogger.Info("Opentracing connected")
 
-	s := server.NewServer(cfg, psqlDB, redisClient, appLogger)
+	s := server.NewServer(cfg, psqlDB, redisClient, minioClient, appLogger)
 	if err = s.Run(); err != nil {
 		log.Fatal(err)
 	}
