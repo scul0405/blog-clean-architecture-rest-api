@@ -15,4 +15,22 @@ const (
 							address, city, gender, postcode, birthday, created_at, updated_at, login_date  
 							FROM users 
 							WHERE email = $1`
+
+	updateUserQuery = `UPDATE users 
+						SET first_name = COALESCE(NULLIF($1, ''), first_name),
+						    last_name = COALESCE(NULLIF($2, ''), last_name),
+						    email = COALESCE(NULLIF($3, ''), email),
+						    role = COALESCE(NULLIF($4, ''), role),
+						    about = COALESCE(NULLIF($5, ''), about),
+						    avatar = COALESCE(NULLIF($6, ''), avatar),
+						    phone_number = COALESCE(NULLIF($7, ''), phone_number),
+						    address = COALESCE(NULLIF($8, ''), address),
+						    city = COALESCE(NULLIF($9, ''), city),
+						    gender = COALESCE(NULLIF($10, ''), gender),
+						    postcode = COALESCE(NULLIF($11, 0), postcode),
+						    birthday = COALESCE(NULLIF($12, '')::date, birthday),
+						    updated_at = now()
+						WHERE user_id = $13
+						RETURNING *
+						`
 )
