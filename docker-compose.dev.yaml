@@ -31,6 +31,27 @@ services:
     networks:
       - web_api
 
+  redis:
+    image: redis:6-alpine
+    container_name: api_redis
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - web_api
+
+  minio:
+    container_name: blog_minio
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ACCESS_KEY: minio_access_key
+      MINIO_SECRET_KEY: minio_secret_key_123
+    command: sever /data
+    networks:
+      - web_api
+
   api:
     container_name: blog_api
     build:
@@ -41,6 +62,8 @@ services:
     depends_on:
       - postgres
       - jaeger
+      - redis
+      - minio
     entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
     command: [ "/app/main" ]
     networks:

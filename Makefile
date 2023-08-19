@@ -47,7 +47,10 @@ deps-cleancache:
 
 # ==============================================================================
 # Docker compose commands
-docker:
-	docker-compose up --build
+docker_dev:
+	docker-compose -f docker-compose.dev.yaml up --build
+
+docker_local:
+	docker-compose -f docker-compose.local.yaml up --build
 
 # ==============================================================================

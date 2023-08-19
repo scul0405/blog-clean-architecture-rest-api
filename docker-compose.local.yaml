@@ -1,0 +1,58 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=blog_db
+    networks:
+      - web_api
+
+  jaeger:
+    container_name: jaeger_container
+    image: jaegertracing/all-in-one:1.47
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+      - "14268:14268"
+      - "14269:14269"
+      - "14250:14250"
+      - "9411:9411"
+    networks:
+      - web_api
+
+  redis:
+    image: redis:6-alpine
+    container_name: api_redis
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - web_api
+
+  minio:
+    container_name: blog_minio
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: sculdeptrai
+      MINIO_ROOT_PASSWORD: abcxyz123
+    command: server --console-address ":9001" /data
+    networks:
+      - web_api
+
+networks:
+  web_api:
+    driver: bridge
