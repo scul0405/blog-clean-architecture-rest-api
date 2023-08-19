@@ -4,8 +4,11 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 	httpErrors "github.com/scul0405/blog-clean-architecture-rest-api/pkg/http_errors"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
+	"mime/multipart"
+	"net/http"
 )
 
 // GetRequestID get the request id from echo context
@@ -32,6 +35,43 @@ func ReadRequest(ctx echo.Context, request interface{}) error {
 		return err
 	}
 	return validate.StructCtx(ctx.Request().Context(), request)
+}
+
+var allowedImagesContentTypes = map[string]string{
+	"image/bmp":                "bmp",
+	"image/gif":                "gif",
+	"image/png":                "png",
+	"image/jpeg":               "jpeg",
+	"image/jpg":                "jpg",
+	"image/svg+xml":            "svg",
+	"image/webp":               "webp",
+	"image/tiff":               "tiff",
+	"image/vnd.microsoft.icon": "ico",
+}
+
+func CheckImageFileContentType(fileContent []byte) (string, error) {
+	contentType := http.DetectContentType(fileContent)
+
+	extension, ok := allowedImagesContentTypes[contentType]
+	if !ok {
+		return "", errors.New("this content type is not allowed")
+	}
+
+	return extension, nil
+}
+
+func ReadImage(ctx echo.Context, field string) (*multipart.FileHeader, error) {
+	image, err := ctx.FormFile(field)
+	if err != nil {
+		return nil, errors.WithMessage(err, "ctx.FormFile")
+	}
+
+	// Check content type of image
+	if err = CheckImageContentType(image); err != nil {
+		return nil, err
+	}
+
+	return image, nil
 }
 
 func LogResponseError(ctx echo.Context, logger logger.Logger, err error) {

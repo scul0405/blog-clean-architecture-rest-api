@@ -10,4 +10,5 @@ func MapAuthRoutes(authGroup *echo.Group, h auth.Handlers, mw *middleware.Middle
 	authGroup.POST("/register", h.Register())
 	authGroup.GET("/:id", h.GetByID())
 	authGroup.POST("/login", h.Login())
+	authGroup.POST("/:id/avatar", h.UploadAvatar())
 }

@@ -6,4 +6,5 @@ type Handlers interface {
 	Register() echo.HandlerFunc
 	GetByID() echo.HandlerFunc
 	Login() echo.HandlerFunc
+	UploadAvatar() echo.HandlerFunc
 }
