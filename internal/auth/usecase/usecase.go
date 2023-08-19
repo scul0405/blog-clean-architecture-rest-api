@@ -23,11 +23,17 @@ type authUseCase struct {
 	cfg       *config.Config
 	authRepo  auth.Repository
 	redisRepo auth.RedisRepository
+	minioRepo auth.MinioRepository
 	logger    logger.Logger
 }
 
-func NewAuthUseCase(cfg *config.Config, authRepo auth.Repository, redisRepo auth.RedisRepository, logger logger.Logger) auth.UseCase {
-	return &authUseCase{cfg: cfg, authRepo: authRepo, redisRepo: redisRepo, logger: logger}
+func NewAuthUseCase(
+	cfg *config.Config,
+	authRepo auth.Repository,
+	redisRepo auth.RedisRepository,
+	minioRepo auth.MinioRepository,
+	logger logger.Logger) auth.UseCase {
+	return &authUseCase{cfg: cfg, authRepo: authRepo, redisRepo: redisRepo, minioRepo: minioRepo, logger: logger}
 }
 
 func (u *authUseCase) Register(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
@@ -105,6 +111,34 @@ func (u *authUseCase) Login(ctx context.Context, loginReq *models.LoginUser) (*m
 	}, nil
 }
 
+func (u *authUseCase) UploadAvatar(ctx context.Context, userID uuid.UUID, file models.UploadInput) (*models.User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.UploadAvatar")
+	defer span.Finish()
+
+	uploadInfo, err := u.minioRepo.PutObject(ctx, file)
+	if err != nil {
+		return nil, httpErrors.NewInternalServerError(errors.Wrap(err, "authUC.UploadAvatar.PutObject"))
+	}
+
+	avatarURL := u.generateMinioURL(file.BucketName, uploadInfo.Key)
+
+	updatedUser, err := u.authRepo.Update(ctx, &models.User{
+		UserID: userID,
+		Avatar: &avatarURL,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	updatedUser.SanitizePassword()
+
+	return updatedUser, nil
+}
+
 func (u *authUseCase) generateUserKey(userID string) string {
 	return fmt.Sprintf("%s: %s", basePrefix, userID)
+}
+
+func (u *authUseCase) generateMinioURL(bucket string, key string) string {
+	return fmt.Sprintf("%s/minio/%s/%s", u.cfg.Minio.MinioEndpoint, bucket, key)
 }
