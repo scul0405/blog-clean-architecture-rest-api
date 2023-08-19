@@ -16,12 +16,13 @@ const (
 )
 
 var (
-	BadRequest          = errors.New("Bad request")
-	NotFound            = errors.New("Not Found")
-	Unauthorized        = errors.New("Unauthorized")
-	Forbidden           = errors.New("Forbidden")
-	InternalServerError = errors.New("Internal Server Error")
-	RequestTimeoutError = errors.New("Request Timeout")
+	BadRequest            = errors.New("Bad request")
+	NotFound              = errors.New("Not Found")
+	Unauthorized          = errors.New("Unauthorized")
+	Forbidden             = errors.New("Forbidden")
+	InternalServerError   = errors.New("Internal Server Error")
+	RequestTimeoutError   = errors.New("Request Timeout")
+	NotAllowedImageHeader = errors.New("Not allowed image header")
 )
 
 type RestErr interface {

@@ -28,8 +28,10 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	authRedisRepo := authRepository.NewAuthRedisRepository(s.rdb)
 	blogRedisRepo := blogRepository.NewBlogRedisRepository(s.rdb)
 
+	authMinioRepo := authRepository.NewAuthMinioRepository(s.minioClient)
+
 	// Init use cases
-	authUC := authUC.NewAuthUseCase(s.cfg, authRepo, authRedisRepo, s.logger)
+	authUC := authUC.NewAuthUseCase(s.cfg, authRepo, authRedisRepo, authMinioRepo, s.logger)
 	blogUC := blogUC.NewBlogUseCase(s.cfg, blogRepo, blogRedisRepo, s.logger)
 	commentUC := commentUC.NewCommentUseCase(s.cfg, commentRepo, s.logger)
 

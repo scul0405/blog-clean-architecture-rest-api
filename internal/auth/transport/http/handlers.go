@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
@@ -10,6 +11,7 @@ import (
 	httpErrors "github.com/scul0405/blog-clean-architecture-rest-api/pkg/http_errors"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/utils"
+	"io"
 	"net/http"
 )
 
@@ -83,5 +85,60 @@ func (h *authHandlers) Login() echo.HandlerFunc {
 		}
 
 		return c.JSON(http.StatusOK, userWithToken)
+	}
+}
+
+func (h *authHandlers) UploadAvatar() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.UploadAvatar")
+		defer span.Finish()
+
+		bucket := c.QueryParam("bucket")
+		uID, err := uuid.Parse(c.Param("id"))
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		image, err := utils.ReadImage(c, "file")
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		file, err := image.Open()
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+		defer file.Close()
+
+		binaryImage := bytes.NewBuffer(nil)
+		if _, err = io.Copy(binaryImage, file); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		contentType, err := utils.CheckImageFileContentType(binaryImage.Bytes())
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		reader := bytes.NewReader(binaryImage.Bytes())
+
+		updatedUser, err := h.authUC.UploadAvatar(ctx, uID, models.UploadInput{
+			File:        reader,
+			Name:        image.Filename,
+			Size:        image.Size,
+			ContentType: contentType,
+			BucketName:  bucket,
+		})
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, updatedUser)
 	}
 }
