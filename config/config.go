@@ -13,6 +13,7 @@ type Config struct {
 	Postgres PostgresConfig
 	Jaeger   JaegerConfig
 	Redis    RedisConfig
+	Minio    MinioConfig
 }
 
 type ServerConfig struct {
@@ -56,6 +57,13 @@ type RedisConfig struct {
 	MinIdleConns  int
 	PoolSize      int
 	PoolTimeout   int
+}
+
+type MinioConfig struct {
+	MinioEndpoint  string
+	MinioAccessKey string
+	UseSSL         bool
+	MinioSecretKey string
 }
 
 func LoadConfig(filename string) (*viper.Viper, error) {

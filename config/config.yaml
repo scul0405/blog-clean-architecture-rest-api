@@ -35,3 +35,9 @@ redis:
   MinIdleConns: 200
   PoolSize: 12000
   PoolTimeout: 240
+
+minio:
+  MinioEndpoint: 127.0.0.1:9000
+  MinioAccessKey: DllHm00m9hJcqfxlWLWQ
+  MinioSecretKey: M8WCdMfREGAs2x3hnIDKJg6v24L4Os2feTb0b9FR
+  UseSSL: false
