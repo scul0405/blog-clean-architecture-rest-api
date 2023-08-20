@@ -16,7 +16,7 @@ Simple REST API project using Go with Clean Architecture
 * [minio-go](https://github.com/minio/minio-go) - MinIO Client SDK for Go
 * [swag](https://github.com/swaggo/swag) - Swagger
 * [testify](https://github.com/stretchr/testify) - Testing toolkit
-* [gomock](https://github.com/golang/mock) - Mocking framework
+* [gomock](https://github.com/uber-go/mock) - Mocking framework
 
 ## Quick start
 
