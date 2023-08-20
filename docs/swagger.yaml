@@ -1,0 +1,642 @@
+basePath: /api/v1
+definitions:
+  httpErrors.RestError:
+    properties:
+      error:
+        type: string
+      status:
+        type: integer
+    type: object
+  models.Blog:
+    properties:
+      author_id:
+        type: string
+      blog_id:
+        type: string
+      category:
+        maxLength: 10
+        type: string
+      content:
+        minLength: 20
+        type: string
+      created_at:
+        type: string
+      image_url:
+        maxLength: 512
+        type: string
+      title:
+        minLength: 10
+        type: string
+      updated_at:
+        type: string
+    required:
+    - content
+    - title
+    type: object
+  models.BlogBase:
+    properties:
+      author:
+        type: string
+      author_id:
+        type: string
+      blog_id:
+        type: string
+      category:
+        maxLength: 10
+        type: string
+      content:
+        minLength: 20
+        type: string
+      created_at:
+        type: string
+      image_url:
+        maxLength: 512
+        type: string
+      title:
+        minLength: 10
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.BlogsList:
+    properties:
+      blogs:
+        items:
+          $ref: '#/definitions/models.BlogBase'
+        type: array
+      has_more:
+        type: boolean
+      page:
+        type: integer
+      size:
+        type: integer
+      total_count:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  models.Comment:
+    properties:
+      author_id:
+        type: string
+      blog_id:
+        type: string
+      comment_id:
+        type: string
+      created_at:
+        type: string
+      likes:
+        type: integer
+      message:
+        minLength: 10
+        type: string
+      updated_at:
+        type: string
+    required:
+    - blog_id
+    - message
+    type: object
+  models.CommentBase:
+    properties:
+      author:
+        type: string
+      author_id:
+        type: string
+      avatar_url:
+        type: string
+      blog_id:
+        type: string
+      comment_id:
+        type: string
+      created_at:
+        type: string
+      likes:
+        type: integer
+      message:
+        minLength: 10
+        type: string
+      updated_at:
+        type: string
+    required:
+    - message
+    type: object
+  models.CommentsList:
+    properties:
+      comments:
+        items:
+          $ref: '#/definitions/models.CommentBase'
+        type: array
+      has_more:
+        type: boolean
+      page:
+        type: integer
+      size:
+        type: integer
+      total_count:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  models.User:
+    properties:
+      about:
+        maxLength: 1024
+        type: string
+      address:
+        maxLength: 250
+        type: string
+      avatar:
+        maxLength: 512
+        type: string
+      birthday:
+        maxLength: 10
+        type: string
+      city:
+        maxLength: 24
+        type: string
+      country:
+        maxLength: 24
+        type: string
+      created_at:
+        type: string
+      email:
+        maxLength: 60
+        type: string
+      first_name:
+        maxLength: 30
+        type: string
+      gender:
+        maxLength: 10
+        type: string
+      last_name:
+        maxLength: 30
+        type: string
+      login_date:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone_number:
+        maxLength: 20
+        type: string
+      postcode:
+        type: integer
+      role:
+        maxLength: 10
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    required:
+    - first_name
+    - last_name
+    - password
+    type: object
+info:
+  contact:
+    email: vldtruong1221@gmail.com
+    name: Duy Truong
+    url: https://github.com/scul0405
+  description: Simple server written by Golang
+  title: Blog Clean Architecture Rest API Server
+  version: "1.0"
+paths:
+  /auth/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user by user's id, return user
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get user
+      tags:
+      - Auth
+  /auth/{id}/avatar:
+    post:
+      consumes:
+      - application/json
+      description: upload avatar user, returns user
+      parameters:
+      - description: avatar
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: minio bucket
+        in: query
+        name: bucket
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Upload avatar user
+      tags:
+      - Auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login user, returns user and access token
+      parameters:
+      - description: input data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Login user
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: register new user, returns user and access token
+      parameters:
+      - description: input data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Register new user
+      tags:
+      - Auth
+  /blogs:
+    get:
+      consumes:
+      - application/json
+      description: List blogs, return list of blogs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BlogsList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: List blogs
+      tags:
+      - Blog
+    post:
+      consumes:
+      - application/json
+      description: create blog, returns blog
+      parameters:
+      - description: input data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Blog'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.BlogBase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - Bearer: []
+      summary: Create blog
+      tags:
+      - Blog
+  /blogs/{blog_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete blog by blog_id
+      parameters:
+      - description: blog_id
+        in: path
+        name: blog_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - Bearer: []
+      summary: Delete blog by id
+      tags:
+      - Blog
+    get:
+      consumes:
+      - application/json
+      description: get blog by blog_id, returns blog
+      parameters:
+      - description: blog_id
+        in: path
+        name: blog_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BlogBase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get blog by id
+      tags:
+      - Blog
+    patch:
+      consumes:
+      - application/json
+      description: update blog, returns blog
+      parameters:
+      - description: blog_id
+        in: path
+        name: blog_id
+        required: true
+        type: string
+      - description: input data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.BlogBase'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BlogBase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - Bearer: []
+      summary: Update blog by id
+      tags:
+      - Blog
+  /comments:
+    get:
+      consumes:
+      - application/json
+      description: List comments by blog_id, return list of comments
+      parameters:
+      - description: blog id
+        in: query
+        name: blog_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CommentsList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: List comments by blog_id
+      tags:
+      - Comment
+    post:
+      consumes:
+      - application/json
+      description: create comment, returns comment
+      parameters:
+      - description: input data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Comment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - Bearer: []
+      summary: Create comment
+      tags:
+      - Comment
+  /comments/{comment_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete comment by comment_id
+      parameters:
+      - description: comment_id
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - Bearer: []
+      summary: Delete comment by id
+      tags:
+      - Comment
+    get:
+      consumes:
+      - application/json
+      description: get comment by comment_id, returns comment
+      parameters:
+      - description: comment_id
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CommentBase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get comment by id
+      tags:
+      - Comment
+    patch:
+      consumes:
+      - application/json
+      description: update comment, returns comment
+      parameters:
+      - description: comment_id
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      - description: input data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CommentBase'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CommentBase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - Bearer: []
+      summary: Update comment by id
+      tags:
+      - Comment
+securityDefinitions:
+  Access Token:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
