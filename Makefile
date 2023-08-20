@@ -10,6 +10,9 @@ build:
 test:
 	go test -cover ./...
 
+swag:
+	swag init -g cmd/api/main.go
+
 # ==============================================================================
 # golang-migrate postgresql
 

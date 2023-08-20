@@ -27,6 +27,18 @@ func NewCommentHandlers(cfg *config.Config, commentUC comment.UseCase, logger lo
 	}
 }
 
+// Create godoc
+// @Summary Create comment
+// @Description create comment, returns comment
+// @Tags Comment
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param request body models.Comment true "input data"
+// @Success 201 {object} models.Comment
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /comments [post]
 func (h *commentHandlers) Create() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "commentHandlers.Create")
@@ -48,6 +60,17 @@ func (h *commentHandlers) Create() echo.HandlerFunc {
 	}
 }
 
+// GetByID godoc
+// @Summary Get comment by id
+// @Description get comment by comment_id, returns comment
+// @Tags Comment
+// @Accept json
+// @Produce json
+// @Param comment_id path string true "comment_id"
+// @Success 200 {object} models.CommentBase
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /comments/{comment_id} [get]
 func (h *commentHandlers) GetByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "commentHandlers.GetByID")
@@ -69,6 +92,19 @@ func (h *commentHandlers) GetByID() echo.HandlerFunc {
 	}
 }
 
+// Update godoc
+// @Summary Update comment by id
+// @Description update comment, returns comment
+// @Tags Comment
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param comment_id path string true "comment_id"
+// @Param request body models.CommentBase true "input data"
+// @Success 200 {object} models.CommentBase
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /comments/{comment_id} [patch]
 func (h *commentHandlers) Update() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "commentHandlers.Update")
@@ -97,6 +133,18 @@ func (h *commentHandlers) Update() echo.HandlerFunc {
 	}
 }
 
+// Delete godoc
+// @Summary Delete comment by id
+// @Description Delete comment by comment_id
+// @Tags Comment
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param comment_id path string true "comment_id"
+// @Success 200 {string} string "success"
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /comments/{comment_id} [delete]
 func (h *commentHandlers) Delete() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "commentHandlers.Delete")
@@ -117,6 +165,17 @@ func (h *commentHandlers) Delete() echo.HandlerFunc {
 	}
 }
 
+// List godoc
+// @Summary List comments by blog_id
+// @Description List comments by blog_id, return list of comments
+// @Tags Comment
+// @Accept json
+// @Produce json
+// @Param blog_id query string true "blog id"
+// @Success 200 {object} models.CommentsList
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /comments [get]
 func (h *commentHandlers) List() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "commentHandlers.List")

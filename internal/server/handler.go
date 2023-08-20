@@ -13,6 +13,7 @@ import (
 	commentHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/transport/http"
 	commentUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/usecase"
 	apiMiddleware "github.com/scul0405/blog-clean-architecture-rest-api/internal/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"strings"
 
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/utils"
@@ -39,6 +40,9 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	authHandler := authHttp.NewAuthHandlers(s.cfg, authUC, s.logger)
 	blogHandler := blogHttp.NewBlogHandlers(s.cfg, blogUC, s.logger)
 	commentHandler := commentHttp.NewCommentHandlers(s.cfg, commentUC, s.logger)
+
+	// Swagger
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Group routes
 	v1 := e.Group("/api/v1")

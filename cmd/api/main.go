@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
+	_ "github.com/scul0405/blog-clean-architecture-rest-api/docs"
 	"github.com/scul0405/blog-clean-architecture-rest-api/internal/server"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/minio"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/postgres"
@@ -12,6 +13,16 @@ import (
 	"log"
 )
 
+// @version 1.0
+// @title Blog Clean Architecture Rest API Server
+// @description Simple server written by Golang
+// @contact.name Duy Truong
+// @contact.url https://github.com/scul0405
+// @contact.email vldtruong1221@gmail.com
+// @BasePath /api/v1
+// @securityDefinitions.apikey Access Token
+// @in header
+// @name Authorization
 func main() {
 	log.Println("Starting api server")
 

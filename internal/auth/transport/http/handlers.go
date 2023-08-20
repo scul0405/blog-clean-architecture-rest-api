@@ -25,6 +25,17 @@ func NewAuthHandlers(cfg *config.Config, authUC auth.UseCase, logger logger.Logg
 	return &authHandlers{cfg: cfg, authUC: authUC, logger: logger}
 }
 
+// Register godoc
+// @Summary Register new user
+// @Description register new user, returns user and access token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body models.User true "input data"
+// @Success 201 {object} models.User
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /auth/register [post]
 func (h *authHandlers) Register() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.Register")
@@ -46,6 +57,17 @@ func (h *authHandlers) Register() echo.HandlerFunc {
 	}
 }
 
+// GetByID godoc
+// @Summary Get user
+// @Description Get user by user's id, return user
+// @Tags Auth
+// @Accept json
+// @Param id path string true "id"
+// @Produce json
+// @Success 200 {object} models.User
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /auth/{id} [get]
 func (h *authHandlers) GetByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.GetByID")
@@ -67,6 +89,17 @@ func (h *authHandlers) GetByID() echo.HandlerFunc {
 	}
 }
 
+// Login godoc
+// @Summary Login user
+// @Description login user, returns user and access token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body models.User true "input data"
+// @Success 200 {object} models.User
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /auth/login [post]
 func (h *authHandlers) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.Login")
@@ -88,6 +121,19 @@ func (h *authHandlers) Login() echo.HandlerFunc {
 	}
 }
 
+// UploadAvatar godoc
+// @Summary Upload avatar user
+// @Description upload avatar user, returns user
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param file formData file  true "avatar"
+// @Param id path string true "user id"
+// @Param bucket query string true "minio bucket"
+// @Success 200 {object} models.User
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /auth/{id}/avatar [post]
 func (h *authHandlers) UploadAvatar() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.UploadAvatar")
