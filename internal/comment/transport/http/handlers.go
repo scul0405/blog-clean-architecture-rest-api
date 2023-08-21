@@ -202,3 +202,69 @@ func (h *commentHandlers) List() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, commentsList)
 	}
 }
+
+// Like godoc
+// @Summary Like comment by id
+// @Description like comment, returns comment
+// @Tags Comment
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param comment_id path string true "comment_id"
+// @Success 200 {object} models.CommentBase
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /comments/{comment_id}/like [patch]
+func (h *commentHandlers) Like() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "commentHandlers.Like")
+		defer span.Finish()
+
+		commentUID, err := uuid.Parse(c.Param("comment_id"))
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		err = h.commentUC.Like(ctx, commentUID)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.NoContent(http.StatusOK)
+	}
+}
+
+// Dislike godoc
+// @Summary Dislike comment by id
+// @Description dislike comment, returns comment
+// @Tags Comment
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param comment_id path string true "comment_id"
+// @Success 200 {object} models.CommentBase
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /comments/{comment_id}/dislike [patch]
+func (h *commentHandlers) Dislike() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "commentHandlers.Dislike")
+		defer span.Finish()
+
+		commentUID, err := uuid.Parse(c.Param("comment_id"))
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		err = h.commentUC.Dislike(ctx, commentUID)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.NoContent(http.StatusOK)
+	}
+}
