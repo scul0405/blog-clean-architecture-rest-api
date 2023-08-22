@@ -14,6 +14,6 @@ type UseCase interface {
 	Update(ctx context.Context, comment *models.CommentBase) (*models.CommentBase, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	List(ctx context.Context, blogID uuid.UUID, pq *utils.PaginationQuery) (*models.CommentsList, error)
-	Like(ctx context.Context, id uuid.UUID) error
-	Dislike(ctx context.Context, id uuid.UUID) error
+	Like(ctx context.Context, userComment *models.UserComments) error
+	Dislike(ctx context.Context, userComment *models.UserComments) error
 }

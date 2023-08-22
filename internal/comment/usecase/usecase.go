@@ -105,23 +105,16 @@ func (u *commentUseCase) List(ctx context.Context, blogID uuid.UUID, pq *utils.P
 	return u.commentRepo.List(ctx, blogID, pq)
 }
 
-func (u *commentUseCase) Like(ctx context.Context, id uuid.UUID) error {
+func (u *commentUseCase) Like(ctx context.Context, userComment *models.UserComments) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "commentUC.Like")
 	defer span.Finish()
 
-	// check if user has liked comment
-	userUID, err := utils.GetUserUIDFromCtx(ctx)
-	if err != nil {
-		return httpErrors.NewUnauthorizedError(errors.WithMessage(err, "commentUC.Like.GetUserUIDFromCtx"))
-	}
-
-	uc := &models.UserComments{UserID: userUID, CommentID: id}
-	err = u.userCommentRepo.GetByID(ctx, uc)
+	err := u.userCommentRepo.GetByID(ctx, userComment)
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
 
-	err = u.userCommentRepo.Create(ctx, uc)
+	err = u.userCommentRepo.Create(ctx, userComment)
 	if err != nil {
 		return err
 	}
@@ -129,23 +122,16 @@ func (u *commentUseCase) Like(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (u *commentUseCase) Dislike(ctx context.Context, id uuid.UUID) error {
+func (u *commentUseCase) Dislike(ctx context.Context, userComment *models.UserComments) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "commentUC.Dislike")
 	defer span.Finish()
 
-	// check if user has liked comment
-	userUID, err := utils.GetUserUIDFromCtx(ctx)
-	if err != nil {
-		return httpErrors.NewUnauthorizedError(errors.WithMessage(err, "commentUC.Dislike.GetUserUIDFromCtx"))
-	}
-
-	uc := &models.UserComments{UserID: userUID, CommentID: id}
-	err = u.userCommentRepo.GetByID(ctx, uc)
+	err := u.userCommentRepo.GetByID(ctx, userComment)
 	if errors.Is(err, sql.ErrNoRows) || err != nil {
 		return nil
 	}
 
-	err = u.userCommentRepo.Delete(ctx, uc)
+	err = u.userCommentRepo.Delete(ctx, userComment)
 	if err != nil {
 		return err
 	}
