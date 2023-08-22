@@ -10,6 +10,7 @@ import (
 	blogHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/transport/http"
 	blogUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/usecase"
 	commentRepository "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/repository"
+	commentAsynq "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/transport/asynq"
 	commentHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/transport/http"
 	commentUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/usecase"
 	apiMiddleware "github.com/scul0405/blog-clean-architecture-rest-api/internal/middleware"
@@ -38,10 +39,17 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	blogUC := blogUC.NewBlogUseCase(s.cfg, blogRepo, blogRedisRepo, s.logger)
 	commentUC := commentUC.NewCommentUseCase(s.cfg, commentRepo, userCommentRepo, s.logger)
 
+	// Init task distributors
+	commentTD := commentAsynq.NewCommentTaskDistributor(s.asynqClient, s.logger)
+	commentProcessor := commentAsynq.NewCommentProcessor(commentUC, s.logger)
+
+	// map task process
+	commentAsynq.MapHandlers(s.taskProcessor, commentProcessor)
+
 	// Init handlers
 	authHandler := authHttp.NewAuthHandlers(s.cfg, authUC, s.logger)
 	blogHandler := blogHttp.NewBlogHandlers(s.cfg, blogUC, s.logger)
-	commentHandler := commentHttp.NewCommentHandlers(s.cfg, commentUC, s.logger)
+	commentHandler := commentHttp.NewCommentHandlers(s.cfg, commentUC, commentTD, s.logger)
 
 	// Swagger
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
@@ -91,5 +99,14 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 		s.logger.Infof("Health check RequestID: %s", utils.GetRequestID(c))
 		return c.JSON(http.StatusOK, map[string]string{"status": "OK"})
 	})
+
+	// Run task processor
+	go func() {
+		err := s.taskProcessor.Start()
+		if err != nil {
+			s.logger.Info("failed to start task processor")
+		}
+	}()
+
 	return nil
 }

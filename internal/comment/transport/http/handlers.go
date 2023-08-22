@@ -2,27 +2,33 @@ package http
 
 import (
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
 	"github.com/scul0405/blog-clean-architecture-rest-api/internal/comment"
+	commentAsynq "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/transport/asynq"
 	"github.com/scul0405/blog-clean-architecture-rest-api/internal/models"
+	asynqPkg "github.com/scul0405/blog-clean-architecture-rest-api/pkg/asynq"
 	httpErrors "github.com/scul0405/blog-clean-architecture-rest-api/pkg/http_errors"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/utils"
 	"net/http"
+	"time"
 )
 
 type commentHandlers struct {
 	cfg       *config.Config
+	commentTD commentAsynq.CommentTaskDistributor
 	commentUC comment.UseCase
 	logger    logger.Logger
 }
 
-func NewCommentHandlers(cfg *config.Config, commentUC comment.UseCase, logger logger.Logger) comment.Handlers {
+func NewCommentHandlers(cfg *config.Config, commentUC comment.UseCase, commentTD commentAsynq.CommentTaskDistributor, logger logger.Logger) comment.Handlers {
 	return &commentHandlers{
 		cfg:       cfg,
 		commentUC: commentUC,
+		commentTD: commentTD,
 		logger:    logger,
 	}
 }
@@ -220,15 +226,30 @@ func (h *commentHandlers) Like() echo.HandlerFunc {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "commentHandlers.Like")
 		defer span.Finish()
 
+		userUID, err := utils.GetUserUIDFromCtx(ctx)
+		if err != nil {
+			return c.JSON(httpErrors.ErrorResponse(httpErrors.NewUnauthorizedError(err)))
+		}
+
 		commentUID, err := uuid.Parse(c.Param("comment_id"))
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		err = h.commentUC.Like(ctx, commentUID)
+		opts := []asynq.Option{
+			asynq.MaxRetry(10),
+			asynq.ProcessIn(5 * time.Second),
+			asynq.Queue(asynqPkg.QueueCritical),
+		}
+
+		payload := &commentAsynq.LikeCommentPayload{
+			UserUID:   userUID,
+			CommentID: commentUID,
+		}
+
+		err = h.commentTD.DistributeTaskLikeComment(ctx, payload, opts...)
 		if err != nil {
-			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
@@ -253,15 +274,30 @@ func (h *commentHandlers) Dislike() echo.HandlerFunc {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "commentHandlers.Dislike")
 		defer span.Finish()
 
+		userUID, err := utils.GetUserUIDFromCtx(ctx)
+		if err != nil {
+			return c.JSON(httpErrors.ErrorResponse(httpErrors.NewUnauthorizedError(err)))
+		}
+
 		commentUID, err := uuid.Parse(c.Param("comment_id"))
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		err = h.commentUC.Dislike(ctx, commentUID)
+		opts := []asynq.Option{
+			asynq.MaxRetry(10),
+			asynq.ProcessIn(5 * time.Second),
+			asynq.Queue(asynqPkg.QueueCritical),
+		}
+
+		payload := &commentAsynq.DislikeCommentPayload{
+			UserUID:   userUID,
+			CommentID: commentUID,
+		}
+
+		err = h.commentTD.DistributeTaskDislikeComment(ctx, payload, opts...)
 		if err != nil {
-			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 

@@ -2,11 +2,13 @@ package server
 
 import (
 	"context"
+	"github.com/hibiken/asynq"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
+	asynqPkg "github.com/scul0405/blog-clean-architecture-rest-api/pkg/asynq"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/logger"
 	"net/http"
 	"os"
@@ -21,16 +23,31 @@ const (
 )
 
 type Server struct {
-	echo        *echo.Echo
-	cfg         *config.Config
-	db          *sqlx.DB
-	rdb         *redis.Client
-	minioClient *minio.Client
-	logger      logger.Logger
+	echo          *echo.Echo
+	cfg           *config.Config
+	db            *sqlx.DB
+	rdb           *redis.Client
+	minioClient   *minio.Client
+	asynqClient   *asynq.Client
+	taskProcessor *asynqPkg.RedisTaskProcessor
+	logger        logger.Logger
 }
 
-func NewServer(cfg *config.Config, db *sqlx.DB, rdb *redis.Client, minioClient *minio.Client, logger logger.Logger) *Server {
-	return &Server{echo: echo.New(), cfg: cfg, db: db, rdb: rdb, minioClient: minioClient, logger: logger}
+func NewServer(
+	cfg *config.Config,
+	db *sqlx.DB,
+	rdb *redis.Client,
+	minioClient *minio.Client,
+	asynqClient *asynq.Client,
+	taskProcessor *asynqPkg.RedisTaskProcessor,
+	logger logger.Logger) *Server {
+	return &Server{echo: echo.New(), cfg: cfg,
+		db:            db,
+		rdb:           rdb,
+		minioClient:   minioClient,
+		asynqClient:   asynqClient,
+		taskProcessor: taskProcessor,
+		logger:        logger}
 }
 
 func (s *Server) Run() error {
