@@ -14,6 +14,7 @@ type Config struct {
 	Jaeger   JaegerConfig
 	Redis    RedisConfig
 	Minio    MinioConfig
+	Asynq    AsynqConfig
 }
 
 type ServerConfig struct {
@@ -64,6 +65,12 @@ type MinioConfig struct {
 	MinioAccessKey string
 	UseSSL         bool
 	MinioSecretKey string
+}
+
+type AsynqConfig struct {
+	AsynqEndpoint string
+	AsynqPassword string
+	AsynqDb       int
 }
 
 func LoadConfig(filename string) (*viper.Viper, error) {

@@ -74,11 +74,11 @@ func main() {
 
 	// Asynq
 	asynqClient := asynqPkg.NewAsynqClient(asynq.RedisClientOpt{
-		Addr: "localhost:6379",
+		Addr: cfg.Asynq.AsynqEndpoint,
 	})
 
 	taskProcessor := asynqPkg.NewRedisTaskProcessor(asynq.RedisClientOpt{
-		Addr: "localhost:6379",
+		Addr: cfg.Asynq.AsynqEndpoint,
 	}, appLogger)
 
 	s := server.NewServer(cfg, psqlDB, redisClient, minioClient, asynqClient, taskProcessor, appLogger)
