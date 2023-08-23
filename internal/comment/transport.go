@@ -8,4 +8,6 @@ type Handlers interface {
 	Update() echo.HandlerFunc
 	Delete() echo.HandlerFunc
 	List() echo.HandlerFunc
+	Like() echo.HandlerFunc
+	Dislike() echo.HandlerFunc
 }

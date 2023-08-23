@@ -75,3 +75,6 @@ make swag
 ### Minio
 [http://localhost:9001](http://localhost:9001)
 
+### Asynq
+[http://localhost:3000](http://localhost:3000)
+

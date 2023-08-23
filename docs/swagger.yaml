@@ -634,6 +634,68 @@ paths:
       summary: Update comment by id
       tags:
       - Comment
+  /comments/{comment_id}/dislike:
+    patch:
+      consumes:
+      - application/json
+      description: dislike comment, returns comment
+      parameters:
+      - description: comment_id
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CommentBase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - Bearer: []
+      summary: Dislike comment by id
+      tags:
+      - Comment
+  /comments/{comment_id}/like:
+    patch:
+      consumes:
+      - application/json
+      description: like comment, returns comment
+      parameters:
+      - description: comment_id
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CommentBase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - Bearer: []
+      summary: Like comment by id
+      tags:
+      - Comment
 securityDefinitions:
   Access Token:
     in: header

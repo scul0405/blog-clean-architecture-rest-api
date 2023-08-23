@@ -1,10 +1,12 @@
 package main
 
 import (
+	"github.com/hibiken/asynq"
 	"github.com/opentracing/opentracing-go"
 	"github.com/scul0405/blog-clean-architecture-rest-api/config"
 	_ "github.com/scul0405/blog-clean-architecture-rest-api/docs"
 	"github.com/scul0405/blog-clean-architecture-rest-api/internal/server"
+	asynqPkg "github.com/scul0405/blog-clean-architecture-rest-api/pkg/asynq"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/minio"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/postgres"
 	"github.com/scul0405/blog-clean-architecture-rest-api/pkg/db/redis"
@@ -70,7 +72,16 @@ func main() {
 	defer closer.Close()
 	appLogger.Info("Opentracing connected")
 
-	s := server.NewServer(cfg, psqlDB, redisClient, minioClient, appLogger)
+	// Asynq
+	asynqClient := asynqPkg.NewAsynqClient(asynq.RedisClientOpt{
+		Addr: cfg.Asynq.AsynqEndpoint,
+	})
+
+	taskProcessor := asynqPkg.NewRedisTaskProcessor(asynq.RedisClientOpt{
+		Addr: cfg.Asynq.AsynqEndpoint,
+	}, appLogger)
+
+	s := server.NewServer(cfg, psqlDB, redisClient, minioClient, asynqClient, taskProcessor, appLogger)
 	if err = s.Run(); err != nil {
 		log.Fatal(err)
 	}
