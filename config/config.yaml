@@ -41,3 +41,8 @@ minio:
   MinioAccessKey: DllHm00m9hJcqfxlWLWQ
   MinioSecretKey: M8WCdMfREGAs2x3hnIDKJg6v24L4Os2feTb0b9FR
   UseSSL: false
+
+asynq:
+  AsynqEndpoint: 127.0.0.1:6379
+  AsynqPassword: ""
+  AsynqDb: 0

@@ -47,7 +47,6 @@ CREATE TABLE comments
     author_id  UUID                                               NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
     blog_id    UUID                                               NOT NULL REFERENCES blogs (blog_id) ON DELETE CASCADE,
     message    VARCHAR(1024)                                      NOT NULL CHECK ( message <> '' ),
-    likes      BIGINT                   DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

@@ -10,9 +10,11 @@ import (
 	blogHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/transport/http"
 	blogUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/blog/usecase"
 	commentRepository "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/repository"
+	commentAsynq "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/transport/asynq"
 	commentHttp "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/transport/http"
 	commentUC "github.com/scul0405/blog-clean-architecture-rest-api/internal/comment/usecase"
 	apiMiddleware "github.com/scul0405/blog-clean-architecture-rest-api/internal/middleware"
+	userCommentRepository "github.com/scul0405/blog-clean-architecture-rest-api/internal/user_comment/repository"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"strings"
 
@@ -25,6 +27,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	authRepo := authRepository.NewAuthRepository(s.db)
 	blogRepo := blogRepository.NewBlogRepository(s.db)
 	commentRepo := commentRepository.NewCommentRepository(s.db)
+	userCommentRepo := userCommentRepository.NewUserCommentRepository(s.db)
 
 	authRedisRepo := authRepository.NewAuthRedisRepository(s.rdb)
 	blogRedisRepo := blogRepository.NewBlogRedisRepository(s.rdb)
@@ -34,12 +37,19 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	// Init use cases
 	authUC := authUC.NewAuthUseCase(s.cfg, authRepo, authRedisRepo, authMinioRepo, s.logger)
 	blogUC := blogUC.NewBlogUseCase(s.cfg, blogRepo, blogRedisRepo, s.logger)
-	commentUC := commentUC.NewCommentUseCase(s.cfg, commentRepo, s.logger)
+	commentUC := commentUC.NewCommentUseCase(s.cfg, commentRepo, userCommentRepo, s.logger)
+
+	// Init task distributors
+	commentTD := commentAsynq.NewCommentTaskDistributor(s.asynqClient, s.logger)
+	commentProcessor := commentAsynq.NewCommentProcessor(commentUC, s.logger)
+
+	// map task process
+	commentAsynq.MapHandlers(s.taskProcessor, commentProcessor)
 
 	// Init handlers
 	authHandler := authHttp.NewAuthHandlers(s.cfg, authUC, s.logger)
 	blogHandler := blogHttp.NewBlogHandlers(s.cfg, blogUC, s.logger)
-	commentHandler := commentHttp.NewCommentHandlers(s.cfg, commentUC, s.logger)
+	commentHandler := commentHttp.NewCommentHandlers(s.cfg, commentUC, commentTD, s.logger)
 
 	// Swagger
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
@@ -74,7 +84,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: 5,
 		Skipper: func(c echo.Context) bool {
-			return strings.Contains(c.Request().URL.Path, "swagger") // TODO: Add swagger
+			return strings.Contains(c.Request().URL.Path, "swagger")
 		},
 	}))
 	e.Use(middleware.Secure())
@@ -89,5 +99,14 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 		s.logger.Infof("Health check RequestID: %s", utils.GetRequestID(c))
 		return c.JSON(http.StatusOK, map[string]string{"status": "OK"})
 	})
+
+	// Run task processor
+	go func() {
+		err := s.taskProcessor.Start()
+		if err != nil {
+			s.logger.Info("failed to start task processor")
+		}
+	}()
+
 	return nil
 }

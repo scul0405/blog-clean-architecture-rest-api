@@ -12,4 +12,6 @@ func MapCommentRoutes(commentGroup *echo.Group, h comment.Handlers, mw *middlewa
 	commentGroup.PATCH("/:comment_id", h.Update(), mw.AuthPASETOMiddleware)
 	commentGroup.DELETE("/:comment_id", h.Delete(), mw.AuthPASETOMiddleware)
 	commentGroup.GET("", h.List())
+	commentGroup.PATCH("/:comment_id/like", h.Like(), mw.AuthPASETOMiddleware)
+	commentGroup.PATCH("/:comment_id/dislike", h.Dislike(), mw.AuthPASETOMiddleware)
 }

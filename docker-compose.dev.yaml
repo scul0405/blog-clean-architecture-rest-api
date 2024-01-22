@@ -51,6 +51,17 @@ services:
     command: server /data
     networks:
       - web_api
+      
+  asynqmon:
+    container_name: asynq_monitoring
+    image: hibiken/asynqmon
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      REDIS_ADDR: redis:6379
+    networks:
+      - web_api
 
   api_1:
     container_name: blog_api_1
@@ -62,6 +73,7 @@ services:
       - jaeger
       - redis
       - minio
+      - asynqmon
     entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
     command: [ "/app/main" ]
     networks:
@@ -77,6 +89,7 @@ services:
       - jaeger
       - redis
       - minio
+      - asynqmon
     entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
     command: [ "/app/main" ]
     networks:
@@ -92,6 +105,7 @@ services:
       - jaeger
       - redis
       - minio
+      - asynqmon
     entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
     command: [ "/app/main" ]
     networks:

@@ -17,6 +17,7 @@ Simple REST API project using Go with Clean Architecture
 * [swag](https://github.com/swaggo/swag) - Swagger
 * [testify](https://github.com/stretchr/testify) - Testing toolkit
 * [gomock](https://github.com/uber-go/mock) - Mocking framework
+* [asynq](https://github.com/hibiken/asynq) - Distributed task queue in Go
 
 ## Quick start
 
@@ -74,4 +75,7 @@ make swag
 
 ### Minio
 [http://localhost:9001](http://localhost:9001)
+
+### Asynq
+[http://localhost:3000](http://localhost:3000)
 
