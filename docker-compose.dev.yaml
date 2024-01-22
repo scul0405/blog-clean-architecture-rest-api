@@ -48,17 +48,15 @@ services:
     environment:
       MINIO_ACCESS_KEY: minio_access_key
       MINIO_SECRET_KEY: minio_secret_key_123
-    command: sever /data
+    command: server /data
     networks:
       - web_api
 
-  api:
-    container_name: blog_api
+  api_1:
+    container_name: blog_api_1
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
     depends_on:
       - postgres
       - jaeger
@@ -66,6 +64,50 @@ services:
       - minio
     entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
     command: [ "/app/main" ]
+    networks:
+      - web_api
+
+  api_2:
+    container_name: blog_api_2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - jaeger
+      - redis
+      - minio
+    entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
+    command: [ "/app/main" ]
+    networks:
+      - web_api
+
+  api_3:
+    container_name: blog_api_3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - jaeger
+      - redis
+      - minio
+    entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
+    command: [ "/app/main" ]
+    networks:
+      - web_api
+
+  nginx:
+    container_name: blog_nginx
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api_1
+      - api_2
+      - api_3
     networks:
       - web_api
 
